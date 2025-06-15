@@ -1,0 +1,55 @@
+---
+- name: Run cli.py with automation on Windows
+  hosts: linuxMac
+  gather_facts: yes
+  vars:
+    project_source: "{{ playbook_dir }}/.."
+    extra_params: ""
+  tasks:
+
+    - name: Check if Python is available
+      command: python3 --version
+      register: python_check
+      ignore_errors: yes
+
+    - name: Check ansible_os_family
+      debug:
+        msg: "{{ ansible_os_family }}"
+
+    - name: End playbook if not Linux/Mac or Python is not found (I will keep AIX out for now)
+      fail:
+        msg: "This playbook is intended for Windows hosts with Python installed."
+      when: ansible_os_family == "Windows" or python_check.rc != 0
+
+    - name: Set project_dst variable once
+      set_fact:
+        project_dst: "/tmp/project_{{ 9999 | random }}"
+
+    - name: Create destination directory
+      command: mkdir -p "{{ project_dst }}"
+      
+    - name: Copy project files
+      copy:
+        src: "{{ project_source }}"
+        dest: "{{ project_dst }}"
+
+    - name: Install Python requirements
+      pip:
+        requirements: "{{ project_dst }}/AzulProjectV2/requirements.txt"
+        executable: pip3
+
+    - name: Run CLI
+      command: python3 {{ project_dst }}/AzulProjectV2/src/cli.py --automation True {{ extra_params }}
+      register: cli_output
+
+    - name: Clean stdout for JSON (remove errors)
+      set_fact:
+        cleaned_stdout: "{{ cli_output.stdout | regex_replace('(?ms)^Could not get CPU usage.*?(?=\\n\\{)', '') | trim }}"
+
+    - name: Show parsed JSON
+      debug:
+        var: cleaned_stdout
+
+    - name: Delete temporary project folder (Linux/Mac)
+      command: rm -rf "{{ project_dst }}"
+      ignore_errors: yes

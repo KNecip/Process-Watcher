@@ -1,0 +1,64 @@
+---
+- name: Run cli.py with automation on Windows
+  hosts: windows
+  gather_facts: yes
+  vars:
+    project_source: "{{ playbook_dir }}/.."
+    extra_params: ""
+  tasks:
+
+    - name: Check if python is available
+      win_command: python --version
+      register: python_check
+      ignore_errors: yes
+
+    - name: Check ansible_os_family
+      debug:
+        msg: "{{ ansible_os_family }}"
+
+    - name: Exit playbook if not Windows or Python is not found
+      fail:
+        msg: "This playbook is intended for Windows hosts with Python installed."
+      when: ansible_os_family != "Windows" or python_check.rc != 0
+
+    - name: Set project_destination variable once
+      set_fact:
+        project_destination: "C:\\Temp\\project_{{ 9999 | random }}"
+      
+    - name: Copy project files to Windows temp dir
+      win_copy:
+        src: "{{ project_source }}"
+        dest: "{{ project_destination }}"
+      vars:
+        ansible_winrm_transport: ntlm
+
+    - name: Create destination directory
+      win_file:
+        path: "{{ project_destination }}"
+        state: directory
+
+    - name: Check project files on Windows
+      win_shell: dir "{{ project_destination }}"
+      register: dir_output
+
+    - name: Install Python requirements
+      win_command: python -m pip install -r {{ project_destination }}\\AzulProjectV2\\requirements.txt
+      when: ansible_os_family == "Windows"
+
+    - name: Run CLI
+      win_command: >
+        python {{ project_destination }}\\AzulProjectV2\\src\\cli.py --automation True {{ extra_params }}
+      register: cli_output
+
+    - name: Clean stdout for JSON (remove errors)
+      set_fact:
+        cleaned_stdout: "{{ cli_output.stdout | regex_replace('(?ms)^Could not get CPU usage.*?(?=\\n\\{)', '') | trim }}"
+
+    - name: Show parsed JSON
+      debug:
+        var: cleaned_stdout
+
+    - name: Delete temporary project folder from Windows
+      win_file:
+        path: "{{ project_destination }}"
+        state: absent
