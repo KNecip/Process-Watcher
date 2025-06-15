@@ -29,4 +29,4 @@ jobs:
 
       - name: Run CLI tool (JSON output)
         run: |
-          python -m src.cli --output json --file processes.json
+          python -m src.cli --output json --automation True
