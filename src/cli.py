@@ -59,7 +59,7 @@ class ProcessMonitorCLI:
             help="Show detailed information of denied processes",
         )
         reporting_group.add_argument(
-            "--include-system-info",
+            "--include_system_info",
             action="store_true",
             default=False,
             help="Include system information",

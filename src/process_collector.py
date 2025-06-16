@@ -207,12 +207,13 @@ class ProcessCollector:
             proc_info.cpu_percent = float(fields[2])
             proc_info.memory_megabyte = float(fields[3])
             proc_info.status = fields[4]
-            proc_info.name = os.path.basename(proc_info.command.split()[0]) if proc_info.command else f"pid_{pid}"
+            name_fetch_cmd = subprocess.run([f"ps -p {str(pid)} -o command= | awk '{{print $1}}' | xargs basename"], capture_output=True, shell=True, text=True, timeout=5).stdout
+            proc_info.name = name_fetch_cmd if name_fetch_cmd else ""
         except Exception as e:
             proc_info.accessible = False
             proc_info.error = f"Unexpected error: {e}"
 
-        return proc_info
+        return proc_info.to_dict()
     
     def _get_process_info_windows(self, pid: int) -> ProcessInfo:
         """Get process information on Windows using PowerShell"""
