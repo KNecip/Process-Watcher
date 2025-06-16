@@ -102,11 +102,11 @@ python src/cli.py --output csv --file < path you want to create output file at >
 ```
 After creating CSV file, you can import it to any desired worksheet file (Excel/Google Sheets/Libra...)
 For Example for Excel, Data -> From Text/CSV
-![Button](image-1.png)
+![Button](/examples/virtualization%20pictures/image-1.png)
 Please choose comma as delimitter and let it import.
-![Comma Delimitter](image-2.png)
+![Comma Delimitter](/examples/virtualization%20pictures/image-2.png)
 Once it is done, you will see something like:
-![CSV After Export](image-3.png)
+![CSV After Export](/examples/virtualization%20pictures/image-3.png)
 From here, you can see any information you desire to investigate or save as xlsx
 
 
