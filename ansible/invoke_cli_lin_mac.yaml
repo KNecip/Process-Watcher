@@ -1,5 +1,5 @@
 ---
-- name: Run cli.py with automation on Windows
+- name: Run CLI
   hosts: linuxMac
   gather_facts: yes
   vars:

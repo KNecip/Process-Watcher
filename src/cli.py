@@ -74,11 +74,6 @@ class ProcessMonitorCLI:
             help="Show help for visualizing the output data",
         )
         utility_group.add_argument(
-            "--test-permissions",
-            action="store_true",
-            help="Test and report current user permissions for process monitoring",
-        )
-        utility_group.add_argument(
             "--limit",
             "-l",
             type=int,
@@ -178,9 +173,9 @@ class ProcessMonitorCLI:
             output_content = formatter.to_csv(data, args)
 
         if args.file:
-            if not args.file.endswith('.csv'):
+            if not args.file.endswith('.txt'):
                 os.makedirs(args.file, exist_ok=True)
-                args.file = os.path.join(args.file, 'processes.csv')
+                args.file = os.path.join(args.file, 'processes.txt')
             with open(args.file, 'w', newline='') as f:
                 f.write(output_content)
             if args.verbose:
@@ -243,6 +238,8 @@ class ProcessMonitorCLI:
                         parsed_args.limit = int(user_input.split(" ")[-1])
                         print(f"Limit set to: {parsed_args.limit}")
                 elif    "output"                in user_input.lower():
+                    if parsed_args.output != "csv" and parsed_args.output != "json":
+                        print("Error: Invalid output format. Use 'json' or 'csv'.")
                     parsed_args.output = user_input.split(" ")[-1]
                     print(f"Output format set to: {parsed_args.output}")
                 elif    "file"                  in user_input.lower():

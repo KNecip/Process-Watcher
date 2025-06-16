@@ -226,8 +226,8 @@ class ProcessCollector:
                 process.accessible = True
                 process.name = proc_json.get('Name')
                 process.user = proc_json.get('User')
-                process.status = 'Running'  # I am fetching only running processes
-                process.cpu_percent = self._get_cpu_usage(pid, interval=1.0) 
+                process.status = 'Running'
+                process.cpu_percent = self._get_cpu_usage(pid, interval=0.5) 
                 process.memory_megabyte = proc_json.get('Memory (MB)')
             if not process.name:
                 process.accessible = False
@@ -248,13 +248,14 @@ class ProcessCollector:
         elif 'win' in self.os:
             return self._get_process_info_windows(pid)
     
-    def _get_cpu_usage(self, pid: int, interval: float = 1.0) -> float:
+    def _get_cpu_usage(self, pid: int, interval: float = 0.5) -> float:
         """Get CPU usage for a specific process
         - Note: It does not work on macOS due to psutil limitations, whole CPU core count is returned instead."""
         try:
             proc = psutil.Process(pid)
             if proc.is_running():
-                cpu_usage = (proc.cpu_percent(interval=interval)/len(psutil.Process(pid).cpu_affinity()))
+                proc.cpu_percent(interval=None)
+                cpu_usage = (proc.cpu_percent(interval=interval))
                 return cpu_usage
             return 0.0
         except (psutil.NoSuchProcess, psutil.AccessDenied):
